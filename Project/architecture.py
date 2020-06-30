@@ -1,7 +1,6 @@
 from keras import Input, Model
 from keras import backend as K
-from keras.layers import Conv1D, BatchNormalization, Activation, Dropout, TimeDistributed, Dense, MaxPooling1D, Lambda, \
-    Add
+from keras.layers import Conv1D, BatchNormalization, Activation, Dropout, TimeDistributed, Dense, MaxPooling1D, Lambda, Add
 from keras.optimizers import Adam
 
 

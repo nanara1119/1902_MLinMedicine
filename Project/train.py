@@ -22,6 +22,8 @@ def load_train_val_data(parser):
     train_x, train_y = preproc.process(*train)
     val_x, val_y = preproc.process(*val)
 
+    print("train size : {}, {}".format(len(train_x), len(train_y)))
+    print("val size : {}, {}".format(len(val_x), len(val_y)))
     args = parser.parse_args()
 
     model = architecture.build_model()
@@ -32,9 +34,9 @@ def load_train_val_data(parser):
     check_pointer = keras.callbacks.ModelCheckpoint(
         filepath=file_name,
         save_best_only=False)
-    stopping = keras.callbacks.EarlyStopping(patience=5)
+    stopping = keras.callbacks.EarlyStopping(patience=10)
 
-    model.fit(train_x, train_y, batch_size = int(args.batchsize), epochs = int(args.epochs),
+    model.fit(train_x, train_y,batch_size = int(args.batchsize), epochs = int(args.epochs),
               validation_data=(val_x, val_y), callbacks = [check_pointer, stopping])
 
 
@@ -55,7 +57,7 @@ if __name__ == '__main__':
     print("start train")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epochs", default=1)
+    parser.add_argument("--epochs", default=100)
     parser.add_argument("--batchsize", default=32)
 
     start_time = time.time()

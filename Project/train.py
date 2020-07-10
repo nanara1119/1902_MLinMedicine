@@ -11,6 +11,7 @@ import numpy as np
 import scipy.stats as sst
 from tensorflow import keras
 
+default_lr = 0.001
 
 def load_train_val_data(parser):
     print("load_train_val_data ... ")
@@ -35,14 +36,15 @@ def load_train_val_data(parser):
         filepath=file_name,
         save_best_only=False)
     stopping = keras.callbacks.EarlyStopping(patience=10)
+    reduce_lr = keras.callbacks.ReduceLROnPlateau(factor=0.1, patience=2, min_lr=default_lr*0.001)
 
     model.fit(train_x, train_y,batch_size = int(args.batchsize), epochs = int(args.epochs),
-              validation_data=(val_x, val_y), callbacks = [check_pointer, stopping])
+              validation_data=(val_x, val_y), callbacks = [check_pointer, reduce_lr])
 
 
 def get_filename_for_saving(save_dir):
     return os.path.join(save_dir,
-            "{val_loss:.3f}-{val_accuracy:.3f}-{epoch:03d}-{loss:.3f}-{accuracy:.3f}.hdf5")
+            "{epoch:03d}-{val_loss:.3f}-{val_accuracy:.3f}-{loss:.3f}-{accuracy:.3f}.hdf5")
 
 def make_save_dir(dirname, experiment_name):
     c_time = datetime.datetime.now()

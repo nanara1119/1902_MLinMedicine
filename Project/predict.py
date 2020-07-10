@@ -3,8 +3,8 @@ import collections
 import json
 
 import load
-from sklearn import metrics
-from sklearn.metrics import confusion_matrix
+
+from sklearn.metrics import confusion_matrix, f1_score, roc_auc_score, precision_recall_fscore_support
 from tensorflow import keras
 import scipy.stats as sst
 import numpy as np
@@ -28,10 +28,19 @@ def predict(parser):
     counts = np.array(counts)[None, None, :]
     total = np.sum(counts) + counts.shape[1]
     prior = (counts + smooth) / float(total)
+    #print("prior : ", prior)
 
     probs = []
     labels = []
 
+    ecgs, committee_labels = preproc.process(*val)
+    m_probs = model.predict(ecgs)
+
+    #print(type(ecgs), ecgs.shape)
+    #print(type(committee_labels), committee_labels.shape)
+
+
+    '''
     for x, y in zip(*val):
         x, y = preproc.process([x], [y])
         probs.append(model.predict(x))
@@ -39,18 +48,66 @@ def predict(parser):
 
     preds = []
     ground_truth = []
+
     for p, g in zip(probs, labels):
         preds.append(sst.mode(np.argmax(p / prior, axis=2).squeeze())[0][0])
         ground_truth.append(sst.mode(np.argmax(g, axis=2).squeeze())[0][0])
+    '''
+
+    committee_labels = np.argmax(committee_labels, axis=2)
+    committee_labels = committee_labels[:, 0]
+    #print(committee_labels)
+    #print(committee_labels.shape)
+
+    print(m_probs)
+    print(m_probs.shape)
+
+    preds = np.argmax(m_probs, axis=2)
+    preds = preds[:, 0]
+    #print(preds)
+    #print(preds.shape)
+
+    report = skm.classification_report(committee_labels, preds, target_names=preproc.classes, digits=3)
+    scores = skm.precision_recall_fscore_support(committee_labels, preds, average=None)
+    print("report : \n", report)
+    #print("scores : ", scores)
+
+    cm = confusion_matrix(committee_labels, preds)
+    print("confusion matrix : ", cm)
+
+    f1 = f1_score(committee_labels, preds, average='micro')
+    print("f1_score : ", f1)
+
+    '''
+        ***
+        roc_auc_score - m_probs 
+    '''
+    m_probs = np.sum(m_probs, axis=1)
+    m_probs = m_probs / 71
+
+    #print(ground_truth.shape, m_probs.shape)
+
+    ovo_auroc = roc_auc_score(committee_labels, m_probs, multi_class='ovo')
+    ovr_auroc = roc_auc_score(committee_labels, m_probs, multi_class='ovr')
+
+    print("ovr_auroc : ", ovr_auroc)
+    print("ovo_auroc : ", ovo_auroc)
 
 
-    report = skm.classification_report(ground_truth, preds, target_names=preproc.classes, digits=3)
+
+    '''
+    report = skm.classification_report(ground_truth, preds, target_names=preproc.classes, digits=3 )
     scores = skm.precision_recall_fscore_support(ground_truth, preds, average=None)
-    print(report)
-    print("Average {}".format(np.mean(scores[2][:3])))
+    print("report : ", report)
+    print("scores : ", scores)
 
-    cm = metrics.multilabel_confusion_matrix(ground_truth, preds)
+
+    cm = confusion_matrix(ground_truth, preds)
     print(cm)
+
+    f1 = f1_score(ground_truth, preds, average='micro')
+    print("f1_score : ", f1)    
+    '''
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

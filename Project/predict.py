@@ -83,7 +83,7 @@ def predict(parser):
         roc_auc_score - m_probs 
     '''
     m_probs = np.sum(m_probs, axis=1)
-    m_probs = m_probs / 71
+    m_probs = m_probs / 71  # one data set max size (element count) -> normalization
 
     #print(ground_truth.shape, m_probs.shape)
 

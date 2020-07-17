@@ -39,7 +39,7 @@ def load_train_val_data(parser):
     reduce_lr = keras.callbacks.ReduceLROnPlateau(factor=0.1, patience=2, min_lr=default_lr*0.001)
 
     model.fit(train_x, train_y,batch_size = int(args.batchsize), epochs = int(args.epochs),
-              validation_data=(val_x, val_y), callbacks = [check_pointer, reduce_lr])
+              validation_data=(val_x, val_y), callbacks = [check_pointer, stopping])
 
 
 def get_filename_for_saving(save_dir):

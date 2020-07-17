@@ -9,6 +9,7 @@ import sys
 
 import load
 import utils
+import scipy.stats as sst
 from sklearn.metrics import f1_score, confusion_matrix
 
 model_path = "data/model/2020711659/017-0.230-0.923-0.126-0.956.hdf5"
@@ -69,23 +70,25 @@ def roc_auc(ground_truth, probs, index):
 
 def roc_auc_set(ground_truth, probs, index):
     gts = np.argmax(ground_truth, axis=2)
-    max_ps = np.max(probs[...,index], axis=1)
-    max_gts = np.any(gts==index, axis=1)
+    max_ps = np.max(probs[...,index], axis=1)   #   이상
+    max_gts = np.any(gts==index, axis=1)    #   이상
     pos = np.sum(max_gts)
     neg = max_gts.size - pos
 
-    #print(max_gts.shape, max_ps.shape)
-    #print(type(max_gts), type(max_ps))
-    #print(max_gts)
-    #print(max_ps)
-
+    if index == 3:
+        #print(max_gts)
+        #print("=====")
+        #print(max_ps)
+        print("111 : \n", probs[..., 3] )
+        print("=====")
+        print(max_ps)
     auc = skm.roc_auc_score(max_gts, max_ps)
     return pos, neg, auc
 
 def print_aucs(auc_fn, ground_truth, probs):
     macro_average = 0.0; total = 0.0
-    print(type(ground_truth), type(probs))
-    print(ground_truth.shape, probs.shape)
+    #print(type(ground_truth), type(probs))
+    #print(ground_truth.shape, probs.shape)
     for idx, cname in preproc.int_to_class.items():
         pos, neg, auc = auc_fn(ground_truth, probs, idx)
         total += pos
@@ -106,6 +109,8 @@ def stats(ground_truth, preds):
         fn = np.sum(g==i) - tp
         tn = np.sum(g!=i) - fp
         stat_dict[i] = (tp, fp, fn, tn)
+        print(i)
+        print(tp, fp, fn, tn)
     return stat_dict
 
 def print_results(sd):
@@ -124,12 +129,12 @@ def print_results(sd):
     print("Average F1 {:.3f}".format(tf1 / float(tot)))
 
 print("Sequence level AUC")
-#print_aucs(roc_auc, committee_labels, probs)
+print_aucs(roc_auc, committee_labels, probs)
 
 print("Set level AUC")
 print_aucs(roc_auc_set, committee_labels, probs)
 
 print("Model")
-#print_results(stats(committee_labels, probs))
+print_results(stats(committee_labels, probs))
 
 #print(confusion_matrix(np.argmax(committee_labels, axis=2).ravel(), np.argmax(probs, axis=2).ravel()))

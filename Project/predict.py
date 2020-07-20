@@ -51,9 +51,7 @@ def predict(parser):
     preds = []
     ground_truth = []
 
-    for p, g in zip(probs, labels):
-        temp = np.argmax(p / prior, axis = 2)
-        print(temp)
+    for p, g in zip(probs, labels):        
         preds.append(sst.mode(np.argmax(p / prior, axis=2).squeeze())[0][0])
         ground_truth.append(sst.mode(np.argmax(g, axis=2).squeeze())[0][0])
 
